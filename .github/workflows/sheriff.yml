@@ -1,0 +1,61 @@
+name: Sheriff sale leads
+
+on:
+  schedule:
+    # 11:00 UTC = 7:00 ET, Monday and Thursday
+    - cron: "0 11 * * 1,4"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "live = real counties + Follow Up Boss. demo = sample PDF + fake FUB, no secrets needed"
+        type: choice
+        default: live
+        options: [live, demo]
+      demo_file:
+        description: "demo only: which sample file"
+        type: choice
+        default: sample_sale_list.pdf
+        options: [sample_sale_list.pdf, sample_sale_list_week2.pdf]
+
+permissions:
+  contents: write      # so the run can commit seen.json back
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r sheriff_leads/requirements.txt
+
+      - name: Run (demo)
+        if: ${{ github.event.inputs.mode == 'demo' }}
+        working-directory: sheriff_leads
+        run: python main.py --pdf "../sample/${{ github.event.inputs.demo_file }}" --county "Example County" --fake-fub
+
+      - name: Run (live)
+        if: ${{ github.event.inputs.mode != 'demo' }}
+        working-directory: sheriff_leads
+        env:
+          FUB_API_KEY: ${{ secrets.FUB_API_KEY }}
+          FUB_SYSTEM_KEY: ${{ secrets.FUB_SYSTEM_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+        run: |
+          if [ -z "$FUB_API_KEY" ]; then
+            echo "FUB_API_KEY secret is not set. Add it under Settings > Secrets > Actions. Skipping live run."
+            exit 0
+          fi
+          python main.py
+
+      - name: Save dedupe state
+        run: |
+          git config user.name "sheriff-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A sheriff_leads/data || true
+          git commit -m "run $(date -u +%Y-%m-%dT%H:%M) (${{ github.event.inputs.mode || 'scheduled' }})" || echo "nothing to commit"
+          git push

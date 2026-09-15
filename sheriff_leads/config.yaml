@@ -1,0 +1,71 @@
+# One block per county. Add a county = add a block. Nothing else changes.
+#
+# type: pdf        -> source page has a link to a PDF that changes weekly
+# type: civilview  -> county is on salesweb.civilview.com (17 NJ counties are)
+#
+# columns: maps the county's column headings (lowercased, spaces kept) to our
+# standard field names. Standard names:
+#   case_number, sale_date, plaintiff, defendant, address, city, zip,
+#   lot, block, status, attorney
+
+counties:
+  - name: Example County
+    state: NJ
+    type: pdf
+    page_url: https://www.examplecounty.gov/sheriff/sales
+    # regex run against every href on the page. First match wins.
+    # Tune this after looking at the real page in the browser (Ctrl+U).
+    link_pattern: "(?i)sale.*\\.pdf$"
+    # pdfplumber table settings. "lines" works for ruled tables,
+    # "text" for tables with no ruling lines. Try both in step 4 of the guide.
+    table_strategy: lines
+    columns:
+      "sheriff #": case_number
+      "docket": case_number
+      "sale date": sale_date
+      "plaintiff": plaintiff
+      "defendant": defendant
+      "address": address
+      "property address": address
+      "lot": lot
+      "block": block
+      "status": status
+      "attorney": attorney
+      "plaintiff attorney": attorney
+
+  - name: Monmouth County
+    state: NJ
+    type: civilview
+    # countyId from the URL on salesweb.civilview.com after clicking the county.
+    # NJ ids (2026-09-15): Atlantic 25, Bergen 7, Burlington 3, Camden 1, Cape May 52,
+    # Cumberland 6, Essex 2, Gloucester 19, Hudson 10, Hunterdon 32, Middlesex 73,
+    # Monmouth 8, Morris 9, Ocean 85, Passaic 17, Salem 20, Union 15
+    civilview_county_id: "8"
+    # headings verified live 2026-09-15. Details page adds attorney, lot/block,
+    # court case, judgment and status history on its own.
+    columns:
+      "sheriff #": case_number
+      "status": status
+      "sales date": sale_date
+      "plaintiff": plaintiff
+      "defendant": defendant
+      "address": address
+
+fub:
+  source_prefix: "Sheriff Sale"
+  tags: ["sheriff-sale"]
+  # created in FUB Admin > Custom Fields first (step 6 of the guide)
+  custom_fields:
+    case_number: customCaseNumber
+    status: customSaleStatus
+    plaintiff: customPlaintiff
+    attorney: customAttorney
+    lot_block: customLotBlock
+    sale_date: customSaleDate
+    defendant_raw: customDefendantRaw
+    court_case: customCourtCase
+    judgment: customJudgment
+
+alerts:
+  to: "CLIENT_EMAIL@example.com"
+  subject_prefix: "[Sheriff Sale]"
