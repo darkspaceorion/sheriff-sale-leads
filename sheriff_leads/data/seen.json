@@ -2,7 +2,7 @@
   "F-24-001234": {
     "county": "Example County",
     "fub_id": 1001,
-    "status": "Scheduled"
+    "status": "Adjourned"
   },
   "F-24-001301": {
     "county": "Example County",
@@ -28,5 +28,10 @@
     "county": "Example County",
     "fub_id": 1006,
     "status": "Bankruptcy"
+  },
+  "F-24-001501": {
+    "county": "Example County",
+    "fub_id": 1007,
+    "status": "Scheduled"
   }
 }
