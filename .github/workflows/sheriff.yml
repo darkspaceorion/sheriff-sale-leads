@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "live = real counties + Follow Up Boss. demo = sample PDF + fake FUB, no secrets needed"
+        description: "live = real counties + Follow Up Boss. demo = sample PDF + fake FUB, no secrets needed. reset = wipe dedupe memory (demo takes)"
         type: choice
         default: live
-        options: [live, demo]
+        options: [live, demo, reset]
       demo_file:
         description: "demo only: which sample file"
         type: choice
@@ -30,13 +30,19 @@ jobs:
           python-version: "3.12"
       - run: pip install -r sheriff_leads/requirements.txt
 
+      - name: Reset dedupe memory
+        if: ${{ github.event.inputs.mode == 'reset' }}
+        run: |
+          rm -f sheriff_leads/data/seen.json sheriff_leads/data/hashes.json sheriff_leads/data/*.csv
+          echo "Cleared seen.json, hashes.json and CSVs. Next demo run starts from zero."
+
       - name: Run (demo)
         if: ${{ github.event.inputs.mode == 'demo' }}
         working-directory: sheriff_leads
         run: python main.py --pdf "../sample/${{ github.event.inputs.demo_file }}" --county "Example County" --fake-fub
 
       - name: Run (live)
-        if: ${{ github.event.inputs.mode != 'demo' }}
+        if: ${{ github.event.inputs.mode != 'demo' && github.event.inputs.mode != 'reset' }}
         working-directory: sheriff_leads
         env:
           FUB_API_KEY: ${{ secrets.FUB_API_KEY }}
