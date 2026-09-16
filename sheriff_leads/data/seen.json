@@ -1,0 +1,32 @@
+{
+  "F-24-001234": {
+    "county": "Example County",
+    "fub_id": 1001,
+    "status": "Scheduled"
+  },
+  "F-24-001301": {
+    "county": "Example County",
+    "fub_id": 1002,
+    "status": "Adjourned"
+  },
+  "F-24-001355": {
+    "county": "Example County",
+    "fub_id": 1003,
+    "status": "Cancelled"
+  },
+  "F-24-001402": {
+    "county": "Example County",
+    "fub_id": 1004,
+    "status": "Scheduled"
+  },
+  "F-24-001410": {
+    "county": "Example County",
+    "fub_id": 1005,
+    "status": "Scheduled"
+  },
+  "F-24-001466": {
+    "county": "Example County",
+    "fub_id": 1006,
+    "status": "Bankruptcy"
+  }
+}
