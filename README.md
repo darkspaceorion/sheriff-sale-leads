@@ -3,6 +3,24 @@
 Watches county sheriff sale listings and pushes new ones into Follow Up Boss as leads.
 Runs on a GitHub Actions schedule, twice a week. No server.
 
+**What this is:** a proof of concept I built in one day for a real estate investor's brief.
+The investor needed a weekly public-record PDF, whose link changes every week, turned into
+CRM leads automatically. It's a plain Python pipeline with no AI calls, because the job
+didn't need them. All the data in this repo is made up. Nothing here came from a client.
+
+**Worth a look:**
+- **Two source types behind one interface.** County pages that post a weekly PDF
+  (`sources/pdf_source.py`, using pdfplumber with per-county column mapping) and the
+  CivilView web table that 17 New Jersey counties share (`sources/civilview.py`). Adding a
+  county means adding a block of config, not code.
+- **Dedupe and status tracking.** It checks case numbers against its own memory and the CRM.
+  A status change (scheduled, adjourned, cancelled) updates the existing lead and adds a note.
+- **Nothing gets lost.** Anything the CRM rejects goes to a fallback CSV (or a Google Sheet)
+  and is retried next run.
+- **A demo mode anyone can run.** Actions > Run workflow > `demo` processes a sample PDF
+  against a fake CRM, with no secrets needed. `reset` clears the memory for a clean demo.
+- **Secrets only in GitHub Actions secrets.** None are in the code.
+
 ## How it runs
 
 1. For each county in `sheriff_leads/config.yaml`, fetch the current sale list
